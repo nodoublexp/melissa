@@ -3,7 +3,7 @@ export class Lexer {
         this.text = text;
         this.position = 0;
         this.tokens = [];
-        this.SYMBOLS = '"()[]{}&!=<>|+-*/^:'
+        this.SYMBOLS = '"()[]{}&!=<>|+-*/^:.,'
         this.KEYWORDS = ["choice", "action", "text", "say", "set", "remove", "add", "if", "elif", "else", "load", "goto", "point"]
     }
     tokenize() {
@@ -75,7 +75,11 @@ export class Lexer {
                 token += char
                 this.tokens.push({"type":"colon", "value":token})
                 this.advance()
-            }
+            } else if (".,".includes(char)) {
+                token += char
+                this.tokens.push({"type":"punctuation", "value":token})
+                this.advance()
+            } 
             else {
                 while (
                     char != " " &&
