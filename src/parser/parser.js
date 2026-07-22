@@ -18,7 +18,7 @@ export class Parser{
                 if (token.type == "string") {
                     struct.value = token.value
                     this.structure.push(struct)
-                    console.log(struct)
+                    // console.log(struct)
                 } else {
                     throw Error("Expected string after '" + struct.type +"', got " + token.type + " instead")
                 }
