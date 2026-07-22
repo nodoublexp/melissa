@@ -4,7 +4,7 @@ export class Lexer {
         this.position = 0;
         this.tokens = [];
         this.SYMBOLS = '"()[]{}&!=<>|+-*/^:.,'
-        this.KEYWORDS = ["choice", "action", "text", "say", "set", "remove", "add", "if", "elif", "else", "load", "goto", "point"]
+        this.KEYWORDS = ["choice", "action", "text", "say", "set", "remove", "add", "if", "elif", "else", "load", "goto", "point", "true", "false"]
     }
     tokenize() {
         this.text = this.text.replace(/    /g, "\t");
@@ -95,6 +95,8 @@ export class Lexer {
                 if (token) {
                     if (token == "in") {
                         this.tokens.push({"type":"operator", "value":token})
+                    } else if (["true", "false"].includes(token)){
+                        this.tokens.push({"type":"bool", "value":token})
                     }
                     else if (this.KEYWORDS.includes(token)) {
                         this.tokens.push({"type":"keyword", "value":token})

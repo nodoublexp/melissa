@@ -1,3 +1,5 @@
+import { Lexer } from "./lexer.js"
+
 export class Parser{
     constructor(tokens) {
         this.tokens = tokens
@@ -11,22 +13,9 @@ export class Parser{
         while (this.position < this.tokens.length) {
             struct = {}
             token = this.peek()
-            if (token.type == "keyword" && ["load", "goto", "point"].includes(token.value)){
-                this.advance()
-                struct.type = token.value
-                token = this.peek()
-                if (token.type == "string") {
-                    struct.value = token.value
-                    this.structure.push(struct)
-                    // console.log(struct)
-                } else {
-                    throw Error("Expected string after '" + struct.type +"', got " + token.type + " instead")
-                }
-            } else {
-                this.advance()
-            }
+            
         }
-        if (this.position >= this.tokens.length - 1) {return this.tokens}
+        if (this.position >= this.tokens.length - 1) {return this.structure}
     }
     peek() {
         return this.tokens[this.position]
