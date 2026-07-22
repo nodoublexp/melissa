@@ -75,6 +75,3 @@ export class Lexer {
         return this.text[this.position]
     }
 }
-let lexer = new Lexer(`"hello!" -123 45.6 7890 01  () ew 
-        ugh `)
-console.log(lexer.tokenize())
