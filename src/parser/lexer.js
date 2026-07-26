@@ -1,8 +1,10 @@
 export class Lexer {
+    #position
+    #tokens
     constructor(text) {
         this.text = text;
-        this.position = 0;
-        this.tokens = [];
+        this.#position = 0;
+        this.#tokens = [];
         this.symbols = [
             "(",")",                // parentheses
             "[","]",                // brackets
@@ -48,131 +50,131 @@ export class Lexer {
         let char = ""
         let token = ""
         
-        while (this.position < this.text.length) {
+        while (this.#position < this.text.length) {
             token = ""
-            char = this.peek()
+            char = this.#peek()
             if (char == "'" || char == '"') {
                 let indicator = char
-                this.advance()
+                this.#advance()
                 let token = ""
-                while (this.peek() != indicator) {
-                    token += this.peek()
-                    this.advance()
+                while (this.#peek() != indicator) {
+                    token += this.#peek()
+                    this.#advance()
                 }
-                this.advance()
-                this.tokens.push({type: "string", value: token})
+                this.#advance()
+                this.#tokens.push({type: "string", value: token})
             } else if ("-0123456789".includes(char)){
                 let dotcount = 0
                 token += char
-                this.advance()
-                char = this.peek()
+                this.#advance()
+                char = this.#peek()
                 while ("0123456789.".includes(char)) {
                     token += char
                     if (char == ".") {
                         dotcount += 1
                     }
-                    this.advance()
-                    char = this.peek()
+                    this.#advance()
+                    char = this.#peek()
                 }
                 if (dotcount > 1) {throw Error("Invalid number '"+token+"'")}
-                if (token == "-") {this.tokens.push({type:"operator", value:token})}
-                else {this.tokens.push({type:"number", value:Number(token)})}
+                if (token == "-") {this.#tokens.push({type:"operator", value:token})}
+                else {this.#tokens.push({type:"number", value:Number(token)})}
             } else if ("\n\t".includes(char)) {
-                this.advance()
-                this.tokens.push({type:"special", value:char})
+                this.#advance()
+                this.#tokens.push({type:"special", value:char})
             } else if ("()".includes(char)) {
-                this.advance()
-                this.tokens.push({type:"parenthesis", value:char})
+                this.#advance()
+                this.#tokens.push({type:"parenthesis", value:char})
             } else if ("[]".includes(char)) {
-                this.advance()
-                this.tokens.push({type:"bracket", value:char})
+                this.#advance()
+                this.#tokens.push({type:"bracket", value:char})
             } else if ("+*/^".includes(char)) {
-                this.advance()
-                this.tokens.push({type:"math", value:char})
+                this.#advance()
+                this.#tokens.push({type:"math", value:char})
             } else if (char == " ") {
-                this.advance()
+                this.#advance()
             } else if ("><!=".includes(char)) {
                 token += char
-                this.advance()
-                char = this.peek()
+                this.#advance()
+                char = this.#peek()
                 while ("><=".includes(char)) {
-                    this.advance()
+                    this.#advance()
                     token += char
-                    char = this.peek()
+                    char = this.#peek()
                 }
-                if (token == "!") {this.tokens.push({type:"logical", value:token})}
+                if (token == "!") {this.#tokens.push({type:"logical", value:token})}
                 else {
                     if (this.expressors.includes(token)) {
-                        this.tokens.push({type:"comparison", value:token})
+                        this.#tokens.push({type:"comparison", value:token})
                     } else {
                         throw Error("Invalid comparison token '"+token+"'")
                     }
                 }
             } else if ("&!".includes(char)) {
                 token += char
-                this.advance()
-                char = this.peek()
+                this.#advance()
+                char = this.#peek()
                 while ("&|".includes(char)) {
-                    this.advance()
+                    this.#advance()
                     token += char
-                    char = this.peek()
+                    char = this.#peek()
                 }
                 if (this.expressors.includes(token)) {
-                    this.tokens.push({type:"logical", value:token})
+                    this.#tokens.push({type:"logical", value:token})
                 } else {
                     throw Error("Invalid logical token '"+token+"'")
                 }
             } else if (":,.".includes(char)) {
-                this.tokens.push({type:"punctuation", value:char})
-                this.advance()
+                this.#tokens.push({type:"punctuation", value:char})
+                this.#advance()
             } else if ("$#@".includes(char)) {
                 let indicator = char
-                this.advance()
-                char = this.peek()
+                this.#advance()
+                char = this.#peek()
                 while (/\p{L}/u.test(char) || char === "_") {
                     token += char
-                    this.advance()
-                    char = this.peek()
+                    this.#advance()
+                    char = this.#peek()
                 }
                 switch (indicator) {
-                    case "$": this.tokens.push({type:"variable", value:token}); break;
-                    case "#": this.tokens.push({type:"label", value:token}); break;
-                    case "@": this.tokens.push({type:"container", value:token}); break;
+                    case "$": this.#tokens.push({type:"variable", value:token}); break;
+                    case "#": this.#tokens.push({type:"label", value:token}); break;
+                    case "@": this.#tokens.push({type:"container", value:token}); break;
                 }
                 
             } else if (/\p{L}/u.test(char)) {
                 token += char
-                this.advance()
-                char = this.peek()
+                this.#advance()
+                char = this.#peek()
                 while (/\p{L}/u.test(char)) {
                     token += char
-                    this.advance()
-                    char = this.peek()
+                    this.#advance()
+                    char = this.#peek()
                 }
                 if (this.keywords.includes(token)) {
                     if (["true", "false"].includes(token)) {
-                        this.tokens.push({type:"boolean", value: token == "true" ? true : false})
+                        this.#tokens.push({type:"boolean", value: token == "true" ? true : false})
                     } else {
-                        this.tokens.push({type:"keyword", value:token})
+                        this.#tokens.push({type:"keyword", value:token})
                     }
                 } else {
-                    this.tokens.push({type:"word", value:token})
+                    this.#tokens.push({type:"word", value:token})
                 }
             }
             else {
-                this.advance()
+                this.#advance()
             }
             
-            if (this.position >= this.text.length - 1) {
-                this.tokens.push({type:"eof", value:null})
-                return this.tokens
+            if (this.#position >= this.text.length - 1) {
+                this.#tokens.push({type:"eof", value:null})
+                return [this.#tokens]
             }
         }
     }
-    advance() {
-        this.position+=1;
+    #advance() {
+        this.#position+=1;
     }
-    peek() {
-        return this.text[this.position]
+    #peek() {
+        return this.text[this.#position]
     }
 }
