@@ -27,7 +27,9 @@ export class Lexer {
             "if",
             "elif",
             "else",
-            "in"
+            "in",
+            "true",
+            "false"
         ]
         this.expressors = [
             ">=",
@@ -74,7 +76,7 @@ export class Lexer {
                 }
                 if (dotcount > 1) {throw Error("Invalid number '"+token+"'")}
                 if (token == "-") {this.tokens.push({type:"operator", value:token})}
-                else {this.tokens.push({type:"number", value:token})}
+                else {this.tokens.push({type:"number", value:Number(token)})}
             } else if ("\n\t".includes(char)) {
                 this.advance()
                 this.tokens.push({type:"special", value:char})
@@ -106,12 +108,65 @@ export class Lexer {
                         throw Error("Invalid comparison token '"+token+"'")
                     }
                 }
+            } else if ("&!".includes(char)) {
+                token += char
+                this.advance()
+                char = this.peek()
+                while ("&|".includes(char)) {
+                    this.advance()
+                    token += char
+                    char = this.peek()
+                }
+                if (this.expressors.includes(token)) {
+                    this.tokens.push({type:"logical", value:token})
+                } else {
+                    throw Error("Invalid logical token '"+token+"'")
+                }
+            } else if (":,.".includes(char)) {
+                this.tokens.push({type:"punctuation", value:char})
+                this.advance()
+            } else if ("$#@".includes(char)) {
+                let indicator = char
+                this.advance()
+                char = this.peek()
+                while (/\p{L}/u.test(char) || char === "_") {
+                    token += char
+                    this.advance()
+                    char = this.peek()
+                }
+                switch (indicator) {
+                    case "$": this.tokens.push({type:"variable", value:token}); break;
+                    case "#": this.tokens.push({type:"label", value:token}); break;
+                    case "@": this.tokens.push({type:"container", value:token}); break;
+                }
+                
+            } else if (/\p{L}/u.test(char)) {
+                token += char
+                this.advance()
+                char = this.peek()
+                while (/\p{L}/u.test(char)) {
+                    token += char
+                    this.advance()
+                    char = this.peek()
+                }
+                if (this.keywords.includes(token)) {
+                    if (["true", "false"].includes(token)) {
+                        this.tokens.push({type:"boolean", value: token == "true" ? true : false})
+                    } else {
+                        this.tokens.push({type:"keyword", value:token})
+                    }
+                } else {
+                    this.tokens.push({type:"word", value:token})
+                }
             }
             else {
                 this.advance()
             }
             
-            if (this.position >= this.text.length - 1) {return this.tokens}
+            if (this.position >= this.text.length - 1) {
+                this.tokens.push({type:"eof", value:null})
+                return this.tokens
+            }
         }
     }
     advance() {
