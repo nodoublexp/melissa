@@ -20,6 +20,7 @@ export class Lexer {
         ]
         this.keywords = [
             "set",
+            "create",
             "choice",
             "text",
             "say",
@@ -46,7 +47,7 @@ export class Lexer {
         ]
     }
     tokenize() {
-        this.text = this.text.replace(/    /g, "\t");
+        this.text = this.text.replace(/    /g, "\t") + " ";
         let char = ""
         let token = ""
         
@@ -76,7 +77,7 @@ export class Lexer {
                     this.#advance()
                     char = this.#peek()
                 }
-                if (dotcount > 1) {throw Error("Invalid number '"+token+"'")}
+                if (dotcount > 1) {throw Error(`Invalid number '${token}'`)}
                 if (token == "-") {this.#tokens.push({type:"operator", value:token})}
                 else {this.#tokens.push({type:"number", value:Number(token)})}
             } else if ("\n\t".includes(char)) {
@@ -107,10 +108,11 @@ export class Lexer {
                     if (this.expressors.includes(token)) {
                         this.#tokens.push({type:"comparison", value:token})
                     } else {
-                        throw Error("Invalid comparison token '"+token+"'")
+                        throw Error(`Invalid comparison token '${token}'`)
                     }
                 }
             } else if ("&!".includes(char)) {
+                token = ""
                 token += char
                 this.#advance()
                 char = this.#peek()
@@ -122,7 +124,7 @@ export class Lexer {
                 if (this.expressors.includes(token)) {
                     this.#tokens.push({type:"logical", value:token})
                 } else {
-                    throw Error("Invalid logical token '"+token+"'")
+                    throw Error(`Invalid logical token '${token}'`)
                 }
             } else if (":,.".includes(char)) {
                 this.#tokens.push({type:"punctuation", value:char})
@@ -142,11 +144,11 @@ export class Lexer {
                     case "@": this.#tokens.push({type:"container", value:token}); break;
                 }
                 
-            } else if (/\p{L}/u.test(char)) {
+            } else if (/\p{L}/u.test(char) || char === "_") {
                 token += char
                 this.#advance()
                 char = this.#peek()
-                while (/\p{L}/u.test(char)) {
+                while (/\p{L}/u.test(char) || char === "_") {
                     token += char
                     this.#advance()
                     char = this.#peek()
@@ -167,7 +169,7 @@ export class Lexer {
             
             if (this.#position >= this.text.length - 1) {
                 this.#tokens.push({type:"eof", value:null})
-                return [this.#tokens]
+                return this.#tokens.slice()
             }
         }
     }
