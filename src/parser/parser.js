@@ -25,20 +25,22 @@ export class Parser {
             this.#ast.body.push(
                 this.#parseStatement()
             )
+            console.log("AFTER STATEMENT:", this.#peek())
         }
 
         return this.#ast
     }
     #parseStatement() {
+        while (this.#peek().type == "newline") {
+            this.#advance()
+        }
         let token = this.#peek()
-        if (token.type !== "keyword") {
-            switch (token.type) {
-                case "bracket":
-                    if (token.value === "[") {return this.#parseList()}
-            }
+        if (token.type != "keyword") {
+            throw Error(
+                    `Expected command`
+                )
             
         } else {
-
         switch (token.value) {
             case "say":
                 return this.#parseSay()
@@ -61,6 +63,7 @@ export class Parser {
                 )
             }
         }
+        
     }
 
     #parseSay() {
@@ -68,14 +71,14 @@ export class Parser {
 
         let value1 = this.#parseValue()
         let value2 = this.#parseValue()
-        if (!["string", "variable", "property_access"].includes(value1.type)) {
+        if (!["string", "variable", "property_access", ].includes(value1.type)) {
         throw Error(
-            `Expected 'string' / 'variable' / 'property_access', got '${value1.type}' instead`
+            `Expected 'string' / 'variable' / 'property_access' , got '${value1.type}' instead`
             )
         }
-        if (!["string", "variable", "property_access"].includes(value2.type)) {
+        if (!["string", "variable", "property_access", ].includes(value2.type)) {
         throw Error(
-            `Expected 'string' / 'variable' / 'property_access', got '${value2.type}' instead`
+            `Expected 'string' / 'variable' / 'property_access' , got '${value2.type}' instead`
             )
         }
         return {
@@ -102,9 +105,9 @@ export class Parser {
         this.#expect("keyword", "text")
 
         let value = this.#parseValue()
-        if (!["string", "variable", "property_access"].includes(value.type)) {
+        if (!["string", "variable", "property_access", ].includes(value.type)) {
         throw Error(
-            `Expected 'string' / 'variable' / 'property_access', got '${value.type}' instead`
+            `Expected 'string' / 'variable' / 'property_access' , got '${value.type}' instead`
             )
         }
         return {
@@ -116,9 +119,9 @@ export class Parser {
         this.#expect("keyword", "load")
 
         let value = this.#parseValue()
-        if (!["string", "variable", "property_access"].includes(value.type)) {
+        if (!["string", "variable", "property_access", ].includes(value.type)) {
         throw Error(
-            `Expected 'string' / 'variable' / 'property_access', got '${value.type}' instead`
+            `Expected 'string' / 'variable' / 'property_access' , got '${value.type}' instead`
             )
         }
         return {
@@ -131,14 +134,14 @@ export class Parser {
 
         let value1 = this.#parseValue()
         let value2 = this.#parseValue()
-        if (!["variable", "property_access"].includes(value1.type)) {
+        if (!["variable", "property_access", ].includes(value1.type)) {
         throw Error(
-            `Expected 'string' / 'property_access', got '${value1.type}' instead`
+            `Expected 'string' / 'property_access' , got '${value1.type}' instead`
             )
         }
-        if (!["string", "variable", "property_access", "number", "list", "boolean"].includes(value2.type)) {
+        if (!["string", "variable", "property_access", , "number", "list", "boolean"].includes(value2.type)) {
         throw Error(
-            `Expected 'string' / 'number' / 'boolean' / 'variable' / 'list' / 'property_access', got '${value2.type}' instead`
+            `Expected 'string' / 'number' / 'boolean' / 'variable' / 'list' / 'property_access' , got '${value2.type}' instead`
             )
         }
         return {
@@ -149,7 +152,6 @@ export class Parser {
     }
     #parseValue() {
         let token = this.#peek()
-        console.log("VALUE TOKEN:", token)
         switch(token.type) {
             case "number":
                 this.#advance()
@@ -175,73 +177,90 @@ export class Parser {
                 return this.#parseReference()
             case "label": 
                 return this.#parseReference()
-            case "bracket":
-                if (token.value === "[") {
-                    return this.#parseList()
-                }
+            // case "bracket":
+            //     if (token.value === "[") {
+            //         return this.#parseList()
+            //     }
             default:
                 throw Error(
                     "Expected value"
                 )
         }
     }
-    #parseList() {
-        this.#expect("bracket", "[")
-        let elements = []
-        while (this.#peek().value !== "]") {
-            elements.push(this.#parseValue())
-            if (this.#peek().value === ",") {
-                this.#advance()
-            }
-            else if (this.#peek().value !== "]") {
-                throw Error("Expected ',' or ']'")
-            }
-        }
+    // #parseList() {
+    //     this.#expect("bracket", "[")
+    //     let elements = []
+    //     while (this.#peek().value !== "]") {
+    //         elements.push(this.#parseValue())
+    //         if (this.#peek().value === ",") {
+    //             this.#advance()
+    //         }
+    //         else if (this.#peek().value !== "]") {
+    //             throw Error("Expected ',' or ']'")
+    //         }
+    //     }
 
-        this.#expect("bracket", "]")
+    //     this.#expect("bracket", "]")
 
-        return {
-            type:"list",
-            elements:elements
-        }
-    }
+    //     return {
+    //         type:"list",
+    //         elements:elements
+    //     }
+    // }
 
     #parseReference() {
-    let token = this.#peek()
-    this.#advance()
-    let node = {}
-    if (token.type === "container") {
-        node = {
-            type:"container",
-            name:token.value
-        }
-    } 
-    else if (token.type === "variable") {
-        node = {
-            type:"variable",
-            name:token.value
-        }
-    }
-    else {
-        throw Error("Expected reference")
-    }
-    while (this.#peek()?.value === ".") {
+        let token = this.#peek()
         this.#advance()
 
-        let property = this.#peek()
+        let node
 
-        if (property.type !== "word") {
-            throw Error("Expected property name")
+        if (token.type === "container") {
+            node = {
+                type:"container",
+                name:token.value
+            }
+        } 
+        else if (token.type === "variable") {
+            node = {
+                type:"variable",
+                name:token.value
+            }
         }
-        this.#advance()
-        node = {
-            type:"property_access",
-            object: node,
-            property: property.value
+        else {
+            throw Error("Expected reference")
         }
+
+        return this.#parsePostfix(node)
     }
 
-    return node
+    #parsePostfix(node) {
+        while (true) {
+            let token = this.#peek()
+            if (token?.value === ".") {
+                this.#advance()
+
+                let property = this.#peek()
+
+                if (property.type !== "word") {
+                    throw Error("Expected property name")
+                }
+
+                this.#advance()
+
+                node = {
+                    type:"property_access",
+                    object: node,
+                    property: property.value
+                }
+
+                continue
+            }
+
+
+            break
+        }
+
+        return node
     }
 
     #advance() {

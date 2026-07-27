@@ -1,13 +1,15 @@
 export class Lexer {
     #position
     #tokens
+    #level
     constructor(text) {
         this.text = text;
         this.#position = 0;
         this.#tokens = [];
+        this.#level = 0
         this.symbols = [
             "(",")",                // parentheses
-            "[","]",                // brackets
+            // "[","]",                // brackets
             "&","|","!",            // logical
             "=","<",">",            // comparison
             "+","-","*","/","^",    // math
@@ -30,7 +32,7 @@ export class Lexer {
             "if",
             "elif",
             "else",
-            "in",
+            // "in",
             "true",
             "false"
         ]
@@ -80,15 +82,37 @@ export class Lexer {
                 if (dotcount > 1) {throw Error(`Invalid number '${token}'`)}
                 if (token == "-") {this.#tokens.push({type:"operator", value:token})}
                 else {this.#tokens.push({type:"number", value:Number(token)})}
-            } else if ("\n\t".includes(char)) {
+
+            } else if (char == "\n") {
                 this.#advance()
-                this.#tokens.push({type:"special", value:char})
+                this.#tokens.push({
+                    type: "newline", value:null
+                })
+                let newLevel = 0
+                while (this.#peek() == "\t") {
+                    newLevel++
+                    this.#advance()
+                }
+                while (newLevel > this.#level) {
+                    this.#level++
+                    this.#tokens.push({
+                        type: "indent", value:null
+                    })
+                }
+                while (newLevel < this.#level) {
+                    this.#level--
+                    this.#tokens.push({
+                        type: "dedent", value:null
+                    })
+                }
+
+                continue
             } else if ("()".includes(char)) {
                 this.#advance()
                 this.#tokens.push({type:"parenthesis", value:char})
-            } else if ("[]".includes(char)) {
-                this.#advance()
-                this.#tokens.push({type:"bracket", value:char})
+            // } else if ("[]".includes(char)) {
+            //     this.#advance()
+            //     this.#tokens.push({type:"bracket", value:char})
             } else if ("+*/^".includes(char)) {
                 this.#advance()
                 this.#tokens.push({type:"math", value:char})
