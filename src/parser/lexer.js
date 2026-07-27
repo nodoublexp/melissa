@@ -22,15 +22,16 @@ export class Lexer {
         ]
         this.keywords = [
             "set",
-            "create",
+            // "create",
             "choice",
+            "label",
             "text",
             "say",
             "load",
             "goto",
-            "act",
+            "choice",
             "if",
-            "elif",
+            // "elif",
             "else",
             // "in",
             "true",
@@ -49,7 +50,7 @@ export class Lexer {
         ]
     }
     tokenize() {
-        this.text = this.text.replace(/    /g, "\t") + " ";
+        this.text = this.text.replace(/\r\n/g, "\n").replace(/    /g, "\t").replace(/\n+/g, "\n").trimEnd() + " ";
         let char = ""
         let token = ""
         
@@ -135,7 +136,7 @@ export class Lexer {
                         throw Error(`Invalid comparison token '${token}'`)
                     }
                 }
-            } else if ("&!".includes(char)) {
+            } else if ("&|".includes(char)) {
                 token = ""
                 token += char
                 this.#advance()
@@ -153,7 +154,7 @@ export class Lexer {
             } else if (":,.".includes(char)) {
                 this.#tokens.push({type:"punctuation", value:char})
                 this.#advance()
-            } else if ("$#@".includes(char)) {
+            } else if ("$@".includes(char)) {
                 let indicator = char
                 this.#advance()
                 char = this.#peek()
@@ -192,6 +193,10 @@ export class Lexer {
             }
             
             if (this.#position >= this.text.length - 1) {
+                while (this.#level > 0) {
+                    this.#tokens.push({type:"dedent", value:null})
+                    this.#level--
+                }
                 this.#tokens.push({type:"eof", value:null})
                 return this.#tokens.slice()
             }
