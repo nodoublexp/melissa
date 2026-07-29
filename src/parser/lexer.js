@@ -29,7 +29,6 @@ export class Lexer {
             "say",
             "load",
             "goto",
-            "choice",
             "if",
             // "elif",
             "else",
@@ -173,7 +172,7 @@ export class Lexer {
                 token += char
                 this.#advance()
                 char = this.#peek()
-                while (/\p{L}/u.test(char) || char === "_") {
+                while (/\p{L}/u.test(char) || char === "_" || "01234567890".includes(char)) {
                     token += char
                     this.#advance()
                     char = this.#peek()

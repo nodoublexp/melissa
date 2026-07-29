@@ -263,6 +263,11 @@ export class Parser {
                     return this.#parseUnary()
                     
                 } break
+             case "math":
+                if (token.value == "-") {
+                    return this.#parseUnary()
+                    
+                } break
             // case "bracket":
             //     if (token.value === "[") {
             //         return this.#parseList()
@@ -275,9 +280,17 @@ export class Parser {
     }
 
     #parseUnary() {
-        this.#expect("logical", "!")
-        let value = this.#parseValue()
-        return {type:"unary_expression", operator:"!", value:value}
+        let token = this.#peek()
+        let value = null
+        this.#advance()
+            if ((token.type == "math")|| (token.type == "logical")) {
+                if ("!-".includes(token.value)) {
+                    value = this.#parseValue()
+                }
+            } else {
+                throw Error("Unexpected token")
+            }
+        return {type:"unary_expression", operator:token, value:value}
     }
 
     #parseExpression() {
