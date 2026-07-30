@@ -67,4 +67,4 @@ Licensed under GNU AGPLv3.
 
 
 
-**The project is still under construction. Feedback, issues and contributions are always welcome.**
+**The project is still under development. Feedback, issues and contributions are always welcome.**
