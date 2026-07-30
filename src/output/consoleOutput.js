@@ -15,7 +15,7 @@ export class ConsoleOutput extends Output {
     async choice(options) {
         for (let i = 0; i < options.length; i++) {
             console.log(
-                `${i + 1}. ${options[i].text}`
+                `${i + 1}. ${options[i]}`
             )
         }
 

@@ -12,12 +12,10 @@ export class Loader {
 
     async loadFormatted(path) {
         let source = await this.load(path)
-
         let lexer = new Lexer(source)
         let tokens = lexer.tokenize()
-
         let parser = new Parser(tokens)
-
+        // console.dir(parser.parse(), {depth:null})
         return parser.parse()
     }
 }

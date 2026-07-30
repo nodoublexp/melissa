@@ -16,7 +16,7 @@ export class ProjectManager {
         this.loader = new Loader(this.#createRawLoader())
         let data = await this.loader.load(path)
         this.project = JSON.parse(data)
-        this.engine = new Engine(this.#createOutput(), this.loader)
+        this.engine = new Engine(this.#createOutput(), this.loader, this.root)
     }
     async start() {
         if (!this.project) {

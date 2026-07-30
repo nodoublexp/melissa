@@ -101,14 +101,15 @@ export class Interpreter {
         this.#context.jumped = true
     }
     async #executeLoad(statement) {
-        this.#engine.load(
+        let ast = await this.#engine.load(
             this.#evaluate(statement.value)
         )
-        //console.log(`Loading '${this.#evaluate(statement.value)}'`)
+
+        await this.#executeBlock(ast.body)
     }
     async #executeChoice(statement) {
         let index = await this.#engine.choice(
-            statement.options
+            statement.options.map(option => this.#evaluate(option.text))
         )
         await this.#executeBlock(
             statement.options[index].body
