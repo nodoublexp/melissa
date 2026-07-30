@@ -28,7 +28,7 @@ choice:
         	say "Knight" "You don't have enough money."
             goto "knight_pay"
     "Leave":
-    	text  "You've left the tower."
+    	text "You've left the tower."
 ```
 ### Project architecture
 Melissa projects are described using a single `project.json` file. 
