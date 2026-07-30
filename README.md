@@ -16,6 +16,7 @@ Melissa uses its own scripting language designed to be fast to write and easy to
 ```melissa
 text "You've entered the Gloomy Castle's guard tower."
 say "Knight" "Greetings, traveller."
+set $money 50
 label "knight_pay"
 say "Knight" "To go further you must pay 50 coins."
 choice:
@@ -28,7 +29,7 @@ choice:
         	say "Knight" "You don't have enough money."
             goto "knight_pay"
     "Leave":
-    	text  "You've left the tower."
+    	text "You've left the tower."
 ```
 ### Project architecture
 Melissa projects are described using a single `project.json` file. 
