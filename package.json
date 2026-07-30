@@ -1,0 +1,8 @@
+{
+  "name": "melissa",
+  "version": "0.1.0",
+  "description": "A minimal scripting language and runtime for creating interactive text adventures.",
+  "type": "module",
+  "license": "AGPL-3.0",
+  "main": "src/index.js"
+}
