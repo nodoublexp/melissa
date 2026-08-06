@@ -54,7 +54,7 @@ Each `.mel` file represents one scene.
 - [x] Project loader
 
 **v0.2**  _planned_
-- [ ] Functions
+- [x] Functions
 - [ ] Loops & `if-elif-else` conditions
 - [ ] Extensions & plugins
 - [ ] Asset manager
