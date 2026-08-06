@@ -33,7 +33,7 @@ export class Parser {
             this.#advance()
         } 
         let token = this.#peek()
-        if (token.type != "keyword") {
+        if (token.type != "word") {
             throw Error(
                     `Expected command`
                 )
@@ -74,7 +74,7 @@ export class Parser {
     }
 
     #parseLabel() {
-        this.#expect("keyword", "label")
+        this.#expect("word", "label")
         let name = this.#parseValue()
         if (name.type !== "string") {
             throw Error(
@@ -87,7 +87,7 @@ export class Parser {
         }
     }
     #parseSay() {
-        this.#expect("keyword", "say")
+        this.#expect("word", "say")
 
         let value1 = this.#parseValue()
         let value2 = this.#parseValue()
@@ -96,7 +96,7 @@ export class Parser {
             `Unexpected type '${value1.type}'`
             )
         }
-        if (!["string", "variable", ].includes(value2.type)) {
+        if (!["string", "variable", "function"].includes(value2.type)) {
         throw Error(
             `Unexpected type '${value2.type}'`
             )
@@ -108,7 +108,7 @@ export class Parser {
         }
     }
     #parseGoto() {
-        this.#expect("keyword", "goto")
+        this.#expect("word", "goto")
 
         let value = this.#parseValue()
         if (value.type != "string") {
@@ -122,10 +122,10 @@ export class Parser {
         }
     }
     #parseText() {
-        this.#expect("keyword", "text")
+        this.#expect("word", "text")
 
         let value = this.#parseValue()
-        if (!(["string", "variable"].includes(value.type))) {
+        if (!(["string", "variable", "function"].includes(value.type))) {
         throw Error(
             `Unexpected type '${value.type}'`
             )
@@ -136,10 +136,10 @@ export class Parser {
         }
     }
     #parseLoad() {
-        this.#expect("keyword", "load")
+        this.#expect("word", "load")
 
         let value = this.#parseValue()
-        if (!(["string", "variable", ].includes(value.type))) {
+        if (!(["string", "variable", "function"].includes(value.type))) {
         throw Error(
             `Unexpected type '${value.type}'`
             )
@@ -150,7 +150,7 @@ export class Parser {
         }
     }
     #parseSet() {
-        this.#expect("keyword", "set")
+        this.#expect("word", "set")
 
         let value1 = this.#parseValue()
         let value2 = this.#parseValue()
@@ -159,7 +159,7 @@ export class Parser {
             `Unexpected type '${value1.type}'`
             )
         }
-        if (!(["string", "variable",  "number", "list", "boolean", "binary_expression", "unary_expression"].includes(value2.type))) {
+        if (!(["string", "variable",  "number", "list", "boolean", "binary_expression", "unary_expression", "function"].includes(value2.type))) {
         throw Error(
             `Unexpected type '${value2.type}'`
             )
@@ -171,7 +171,7 @@ export class Parser {
         }
     }
     #parseChoice() {
-        this.#expect("keyword", "choice")
+        this.#expect("word", "choice")
         this.#expect("punctuation", ":")
         this.#expect("newline")
         this.#expect("indent")
@@ -193,9 +193,9 @@ export class Parser {
         }
 
     #parseIf() {
-        this.#expect("keyword", "if")
+        this.#expect("word", "if")
         let condition = this.#parseValue()
-        if (!["boolean","variable","binary_expression", "unary_expression"].includes(condition.type)) {
+        if (!["boolean","variable","binary_expression", "unary_expression", "function"].includes(condition.type)) {
             throw Error(
                 `Unexpected type '${condition.type}'`
             )
@@ -203,7 +203,7 @@ export class Parser {
         this.#expect("punctuation", ":")
         let body = this.#parseIndentedBlock()
         let token = this.#peek()
-        if (token.type === "keyword" && token.value === "else") {
+        if (token.type === "word" && token.value === "else") {
             this.#advance()
             this.#expect("punctuation", ":")
             let elsebody = this.#parseIndentedBlock()
@@ -268,15 +268,34 @@ export class Parser {
                     return this.#parseUnary()
                     
                 } break
-            // case "bracket":
-            //     if (token.value === "[") {
-            //         return this.#parseList()
-            //     }
+            case "bracket":
+                if (token.value === "[") {
+                    return this.#parseFunction()
+                }
             default:
                 throw Error(
                     "Expected value"
                 )
         }
+    }
+
+    #parseFunction() {
+        this.#advance()
+        let name = ""
+        if (this.#peek().type == "word") {
+            name = this.#peek().value
+        } else {
+            throw Error(`Invalid function name ${this.#peek()}`)
+        }
+        this.#advance()
+        let values = []
+        while (true) {
+            let token = this.#peek()
+            if (token.type === "bracket" && token.value === "]") {break}
+            values.push(this.#parseValue())
+        }
+        this.#advance() 
+        return {type: "function", name, values}
     }
 
     #parseUnary() {
@@ -345,7 +364,7 @@ export class Parser {
     //         if (token?.value == ".") {
     //             this.#advance()
     //             let property = this.#peek()
-    //             if (property.type != "word" && property.type != "keyword") {
+    //             if (property.type != "word" && property.type != "word") {
     //                 throw Error("Expected property name")
     //             }
     //             this.#advance()

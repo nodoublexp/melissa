@@ -9,6 +9,9 @@ export class Loader {
     async load(path) {
         return await this.sourceLoader.read(path)
     }
+    async loadPlugin(path) {
+        return await this.sourceLoader.loadPlugin(path)
+    }
 
     async loadFormatted(path) {
         let source = await this.load(path)

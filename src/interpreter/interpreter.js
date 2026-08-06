@@ -4,12 +4,14 @@ export class Interpreter {
     #setVar
     #engine
     #context
-    constructor(ast, context, engine) {
+    #functionRegistry
+    constructor(ast, context, engine, functionRegistry) {
         this.#ast = ast
         this.#engine = engine
         this.#context = context
         this.#labels = {}
         this.setVar = null
+        this.#functionRegistry = functionRegistry
     }
 
     async run() {
@@ -55,7 +57,7 @@ export class Interpreter {
 
             case "label": {}
                 break
-
+            
             default:
                 throw Error(
                     `Unknown statement ${statement.type}`
@@ -70,6 +72,28 @@ export class Interpreter {
             }
         }
     }
+    #executeFunction(statement) {
+        const fn = this.#functionRegistry.get(statement.name)
+        if (!fn) {
+            throw new Error(`Unknown function: ${statement.name}`)
+        }
+        const args = statement.values.map(arg => this.#evaluate(arg))
+        this.#checkTypes(statement.name,fn.expectedTypes, args)
+        return fn.execute(args)
+    }
+    #checkTypes(name, expectedTypes, args) {
+        if (!expectedTypes) {return null}
+        for (let i = 0; i < expectedTypes.length; i++) {
+            const expected = expectedTypes[i]
+            const actual = typeof args[i]
+            if (expected !== actual) {
+                throw new Error(
+                    `Function '${name}' expected argument ${i + 1} to be ${expected}, got ${actual}`
+                )
+            }
+        }
+    }
+    
     #executeSay(statement) {
         // this.#checkType(this.#evaluate(statement.target), ["string"])
         // this.#checkType(this.#evaluate(statement.value), ["string", "number"])
@@ -164,6 +188,8 @@ export class Interpreter {
                     return value
                 }
             }
+            case "function":
+                return this.#executeFunction(node)
             case "binary_expression": {
                 let left = this.#evaluate(node.left)
                 let right = this.#evaluate(node.right)
@@ -252,14 +278,14 @@ export class Interpreter {
                 throw Error(`Unknown expression '${node.type}'`)
         }
     }
-    #checkType(value, types) {
-        let valueType = typeof value
+    // #checkType(value, types) {
+    //     let valueType = typeof value
 
-        if (types.includes(valueType)) {
-            return true
-        } else {
-                throw Error(`Impossible operation with data type ('${valueType}') given`)
-        }
-    }
+    //     if (types.includes(valueType)) {
+    //         return true
+    //     } else {
+    //             throw Error(`Impossible operation with data type ('${valueType}') given`)
+    //     }
+    // }
 }
 

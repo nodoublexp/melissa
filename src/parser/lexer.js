@@ -9,7 +9,7 @@ export class Lexer {
         this.#level = 0
         this.symbols = [
             "(",")",                // parentheses
-            // "[","]",                // brackets
+            "[","]",                // brackets
             "&","|","!",            // logical
             "=","<",">",            // comparison
             "+","-","*","/","^",    // math
@@ -20,22 +20,22 @@ export class Lexer {
             "\n", "\t",             // special
             "@","#","$"             // prefixes
         ]
-        this.keywords = [
-            "set",
-            // "create",
-            "choice",
-            "label",
-            "text",
-            "say",
-            "load",
-            "goto",
-            "if",
-            // "elif",
-            "else",
-            // "in",
-            "true",
-            "false"
-        ]
+        // this.keywords = [
+        //     "set",
+        //     // "create",
+        //     "choice",
+        //     "label",
+        //     "text",
+        //     "say",
+        //     "load",
+        //     "goto",
+        //     "if",
+        //     // "elif",
+        //     "else",
+        //     // "in",
+        //     "true",
+        //     "false"
+        // ]
         this.expressors = [
             ">=",
             "<=",
@@ -110,9 +110,9 @@ export class Lexer {
             } else if ("()".includes(char)) {
                 this.#advance()
                 this.#tokens.push({type:"parenthesis", value:char})
-            // } else if ("[]".includes(char)) {
-            //     this.#advance()
-            //     this.#tokens.push({type:"bracket", value:char})
+            } else if ("[]".includes(char)) {
+                this.#advance()
+                this.#tokens.push({type:"bracket", value:char})
             } else if ("+*/^".includes(char)) {
                 this.#advance()
                 this.#tokens.push({type:"math", value:char})
@@ -153,7 +153,7 @@ export class Lexer {
             } else if (":,.".includes(char)) {
                 this.#tokens.push({type:"punctuation", value:char})
                 this.#advance()
-            } else if ("$@".includes(char)) {
+            } else if ("$#".includes(char)) {
                 let indicator = char
                 this.#advance()
                 char = this.#peek()
@@ -164,8 +164,8 @@ export class Lexer {
                 }
                 switch (indicator) {
                     case "$": this.#tokens.push({type:"variable", value:token}); break;
-                    case "#": this.#tokens.push({type:"label", value:token}); break;
-                    case "@": this.#tokens.push({type:"container", value:token}); break;
+                    case "#": this.#tokens.push({type:"macro", value:token}); break;
+                    // case "@": this.#tokens.push({type:"container", value:token}); break;
                 }
                 
             } else if (/\p{L}/u.test(char) || char === "_") {
@@ -177,15 +177,12 @@ export class Lexer {
                     this.#advance()
                     char = this.#peek()
                 }
-                if (this.keywords.includes(token)) {
-                    if (["true", "false"].includes(token)) {
-                        this.#tokens.push({type:"boolean", value: token == "true" ? true : false})
-                    } else {
-                        this.#tokens.push({type:"keyword", value:token})
-                    }
+                if (["true", "false"].includes(token)) {
+                    this.#tokens.push({type:"boolean", value: token == "true" ? true : false})
                 } else {
                     this.#tokens.push({type:"word", value:token})
                 }
+                
             }
             else {
                 this.#advance()

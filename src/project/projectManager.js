@@ -5,11 +5,12 @@ import { BrowserLoader } from "../loader/browserLoader.js"
 import { ConsoleOutput } from "../output/consoleOutput.js"
 
 export class ProjectManager {
-    constructor() {
+    constructor(args={}) {
         this.project = null
         this.engine = null
         this.loader = null
         this.root = null
+        this.args = args
     }
     async load(path) {
         this.root = path.substring(0, path.lastIndexOf("/"))
@@ -17,6 +18,14 @@ export class ProjectManager {
         let data = await this.loader.load(path)
         this.project = JSON.parse(data)
         this.engine = new Engine(this.#createOutput(), this.loader, this.root)
+        if (this.project.plugins) {
+            for (const pluginPath of this.project.plugins) {
+                const plugin = await this.loader.loadPlugin(`${this.root}/${pluginPath}`)
+                for (const [name, fn] of Object.entries(plugin.functions ?? {})) {
+                    this.engine.registerFunction(name, fn)
+                }
+            }
+        }
     }
     async start() {
         if (!this.project) {
