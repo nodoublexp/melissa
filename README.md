@@ -55,11 +55,14 @@ Each `.mel` file represents one scene.
 
 **v0.2**  _planned_
 - [x] Functions
-- [ ] Loops & `if-elif-else` conditions
+- [ ] `if-elif-else` conditions
 - [ ] Extensions & plugins
-- [ ] Asset manager
 - [ ] Custom outputs
+
+**v0.3**
 - [ ] Checkpoint system
+- [ ] Asset manager
+- [ ] Loops
 
 ### License
 
